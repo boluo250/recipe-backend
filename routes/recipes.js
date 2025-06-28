@@ -114,8 +114,8 @@ router.post('/', authenticate, async (req, res) => {
     logger.info('Creating new recipe', {
       recipeName: name,
       hasImage: !!image,
-      ingredientsCount: ingredients ? ingredients.length : 0,
-      stepsCount: steps ? steps.length : 0,
+      hasIngredients: !!ingredients,
+      hasSteps: !!steps,
       ip: req.ip || req.connection.remoteAddress
     });
     
