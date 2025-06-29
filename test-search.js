@@ -54,7 +54,7 @@ async function testSearchKeywords() {
     
     const allSearchKeywords = await SearchKeyword.find()
       .sort({ count: -1, lastSearched: -1 })
-      .select('keyword');
+      .select('keyword count');
     
     // 过滤出菜谱中存在的关键词
     const validKeywords = [];
@@ -73,9 +73,9 @@ async function testSearchKeywords() {
       
       if (nameMatch || tagMatch) {
         validKeywords.push(searchKeyword);
-        console.log(`✓ 匹配成功: ${keyword} (名称匹配: ${nameMatch}, 标签匹配: ${tagMatch})`);
+        console.log(`✓ 匹配成功: ${keyword} (${searchKeyword.count}次) - 名称匹配: ${nameMatch}, 标签匹配: ${tagMatch}`);
       } else {
-        console.log(`✗ 不匹配: ${keyword}`);
+        console.log(`✗ 不匹配: ${keyword} (${searchKeyword.count}次)`);
       }
       
       // 限制返回数量
@@ -86,7 +86,7 @@ async function testSearchKeywords() {
     
     console.log('\n最终热门搜索关键词:');
     validKeywords.forEach((item, index) => {
-      console.log(`${index + 1}. ${item.keyword}`);
+      console.log(`${index + 1}. ${item.keyword} (${item.count}次)`);
     });
 
     console.log('\n测试完成！');
