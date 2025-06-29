@@ -7,7 +7,7 @@
   </view>
 
   <!-- 菜谱列表 -->
-  <view class="recipe-list">
+  <view class="recipe-grid">
     <view 
       class="recipe-item" 
       wx:for="{{recipes}}" 
