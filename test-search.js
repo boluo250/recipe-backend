@@ -17,7 +17,7 @@ async function testSearchKeywords() {
     // 测试记录搜索关键词
     console.log('\n=== 测试记录搜索关键词 ===');
     
-    const testKeywords = ['红烧肉', '糖醋里脊', '宫保鸡丁', '麻婆豆腐', '红烧肉', '不存在的菜谱'];
+    const testKeywords = ['红烧肉', '红烧', '肉', '糖醋里脊', '糖醋', '里脊', '宫保鸡丁', '宫保', '鸡丁', '麻婆豆腐', '麻婆', '豆腐', '不存在的菜谱'];
     
     for (const keyword of testKeywords) {
       const result = await SearchKeyword.findOneAndUpdate(
@@ -49,18 +49,43 @@ async function testSearchKeywords() {
       console.log(`${index + 1}. ${keyword}`);
     });
 
-    // 测试获取热门搜索关键词（只返回菜谱中存在的）
-    console.log('\n=== 测试获取热门搜索关键词（仅菜谱中存在的） ===');
+    // 测试获取热门搜索关键词（新的匹配逻辑）
+    console.log('\n=== 测试获取热门搜索关键词（新匹配逻辑） ===');
     
-    const popularKeywords = await SearchKeyword.find({
-      keyword: { $in: Array.from(recipeKeywords) }
-    })
+    const allSearchKeywords = await SearchKeyword.find()
       .sort({ count: -1, lastSearched: -1 })
-      .limit(10)
       .select('keyword');
     
-    console.log('热门搜索关键词（仅菜谱中存在的）:');
-    popularKeywords.forEach((item, index) => {
+    // 过滤出菜谱中存在的关键词
+    const validKeywords = [];
+    for (const searchKeyword of allSearchKeywords) {
+      const keyword = searchKeyword.keyword;
+      
+      // 检查是否匹配菜谱名称（包含关系）
+      const nameMatch = Array.from(recipeKeywords).some(recipeName => 
+        recipeName.includes(keyword) || keyword.includes(recipeName)
+      );
+      
+      // 检查是否匹配标签（精确匹配）
+      const tagMatch = Array.from(recipeKeywords).some(tag => 
+        tag === keyword
+      );
+      
+      if (nameMatch || tagMatch) {
+        validKeywords.push(searchKeyword);
+        console.log(`✓ 匹配成功: ${keyword} (名称匹配: ${nameMatch}, 标签匹配: ${tagMatch})`);
+      } else {
+        console.log(`✗ 不匹配: ${keyword}`);
+      }
+      
+      // 限制返回数量
+      if (validKeywords.length >= 10) {
+        break;
+      }
+    }
+    
+    console.log('\n最终热门搜索关键词:');
+    validKeywords.forEach((item, index) => {
       console.log(`${index + 1}. ${item.keyword}`);
     });
 

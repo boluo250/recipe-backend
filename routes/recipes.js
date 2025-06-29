@@ -38,9 +38,9 @@ router.get('/popular-keywords', authenticate, async (req, res) => {
     // 提取所有菜谱中的关键词（名称和标签）
     const recipeKeywords = new Set();
     recipes.forEach(recipe => {
-      // 添加菜谱名称
+      // 添加菜谱名称（用于包含匹配）
       recipeKeywords.add(recipe.name.toLowerCase());
-      // 添加标签
+      // 添加标签（用于精确匹配）
       if (recipe.tags && Array.isArray(recipe.tags)) {
         recipe.tags.forEach(tag => {
           recipeKeywords.add(tag.toLowerCase());
@@ -48,19 +48,41 @@ router.get('/popular-keywords', authenticate, async (req, res) => {
       }
     });
     
-    // 获取热门搜索关键词，但只返回菜谱中存在的
-    const popularKeywords = await SearchKeyword.find({
-      keyword: { $in: Array.from(recipeKeywords) }
-    })
+    // 获取所有搜索关键词
+    const allSearchKeywords = await SearchKeyword.find()
       .sort({ count: -1, lastSearched: -1 })
-      .limit(Number(limit))
       .select('keyword');
     
+    // 过滤出菜谱中存在的关键词
+    const validKeywords = [];
+    for (const searchKeyword of allSearchKeywords) {
+      const keyword = searchKeyword.keyword;
+      
+      // 检查是否匹配菜谱名称（包含关系）
+      const nameMatch = Array.from(recipeKeywords).some(recipeName => 
+        recipeName.includes(keyword) || keyword.includes(recipeName)
+      );
+      
+      // 检查是否匹配标签（精确匹配）
+      const tagMatch = Array.from(recipeKeywords).some(tag => 
+        tag === keyword
+      );
+      
+      if (nameMatch || tagMatch) {
+        validKeywords.push(searchKeyword);
+      }
+      
+      // 限制返回数量
+      if (validKeywords.length >= limit) {
+        break;
+      }
+    }
+    
     logger.info('Popular search keywords fetched successfully', {
-      count: popularKeywords.length
+      count: validKeywords.length
     });
     
-    res.json(popularKeywords);
+    res.json(validKeywords);
   } catch (err) {
     logger.error('Error fetching popular search keywords', {
       error: err.message,
