@@ -22,6 +22,36 @@ const authenticate = (req, res, next) => {
   }
 };
 
+// 获取热门搜索关键词
+router.get('/popular-keywords', authenticate, async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    logger.info('Fetching popular search keywords', {
+      limit: parseInt(limit),
+      ip: req.ip || req.connection.remoteAddress
+    });
+    
+    const popularKeywords = await SearchKeyword.find()
+      .sort({ count: -1, lastSearched: -1 })
+      .limit(Number(limit))
+      .select('keyword count');
+    
+    logger.info('Popular search keywords fetched successfully', {
+      count: popularKeywords.length
+    });
+    
+    res.json(popularKeywords);
+  } catch (err) {
+    logger.error('Error fetching popular search keywords', {
+      error: err.message,
+      stack: err.stack,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // 获取菜谱列表
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -203,36 +233,6 @@ router.post('/', authenticate, async (req, res) => {
       ip: req.ip || req.connection.remoteAddress
     });
     res.status(400).json({ error: 'Invalid data' });
-  }
-});
-
-// 获取热门搜索关键词
-router.get('/search/popular', authenticate, async (req, res) => {
-  try {
-    const { limit = 10 } = req.query;
-    
-    logger.info('Fetching popular search keywords', {
-      limit: parseInt(limit),
-      ip: req.ip || req.connection.remoteAddress
-    });
-    
-    const popularKeywords = await SearchKeyword.find()
-      .sort({ count: -1, lastSearched: -1 })
-      .limit(Number(limit))
-      .select('keyword count');
-    
-    logger.info('Popular search keywords fetched successfully', {
-      count: popularKeywords.length
-    });
-    
-    res.json(popularKeywords);
-  } catch (err) {
-    logger.error('Error fetching popular search keywords', {
-      error: err.message,
-      stack: err.stack,
-      ip: req.ip || req.connection.remoteAddress
-    });
-    res.status(500).json({ error: 'Server error' });
   }
 });
 

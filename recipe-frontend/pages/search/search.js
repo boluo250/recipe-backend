@@ -27,7 +27,7 @@ Page({
   // 加载热门搜索关键词
   async loadPopularKeywords() {
     try {
-      const popularKeywords = await request('/api/recipes/search/popular?limit=10');
+      const popularKeywords = await request('/api/recipes/popular-keywords?limit=10');
       this.setData({ popularKeywords });
     } catch (error) {
       console.error('加载热门搜索关键词失败:', error);
