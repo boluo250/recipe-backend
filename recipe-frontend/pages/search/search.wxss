@@ -65,7 +65,6 @@
   padding: 16rpx 24rpx;
   display: flex;
   align-items: center;
-  gap: 8rpx;
   transition: all 0.2s ease;
 }
 
@@ -74,8 +73,7 @@
   color: white;
 }
 
-.keyword-item:active .keyword-text,
-.keyword-item:active .keyword-count {
+.keyword-item:active .keyword-text {
   color: white;
 }
 
@@ -83,11 +81,6 @@
   font-size: 28rpx;
   color: #333;
   font-weight: 500;
-}
-
-.keyword-count {
-  font-size: 24rpx;
-  color: #999;
 }
 
 /* 搜索结果 */

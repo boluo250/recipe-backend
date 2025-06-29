@@ -26,7 +26,6 @@
         data-keyword="{{item.keyword}}"
       >
         <text class="keyword-text">{{item.keyword}}</text>
-        <text class="keyword-count">({{item.count}})</text>
       </view>
     </view>
   </view>

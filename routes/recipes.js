@@ -32,10 +32,29 @@ router.get('/popular-keywords', authenticate, async (req, res) => {
       ip: req.ip || req.connection.remoteAddress
     });
     
-    const popularKeywords = await SearchKeyword.find()
+    // 获取所有菜谱的名称和标签
+    const recipes = await Recipe.find({}, 'name tags');
+    
+    // 提取所有菜谱中的关键词（名称和标签）
+    const recipeKeywords = new Set();
+    recipes.forEach(recipe => {
+      // 添加菜谱名称
+      recipeKeywords.add(recipe.name.toLowerCase());
+      // 添加标签
+      if (recipe.tags && Array.isArray(recipe.tags)) {
+        recipe.tags.forEach(tag => {
+          recipeKeywords.add(tag.toLowerCase());
+        });
+      }
+    });
+    
+    // 获取热门搜索关键词，但只返回菜谱中存在的
+    const popularKeywords = await SearchKeyword.find({
+      keyword: { $in: Array.from(recipeKeywords) }
+    })
       .sort({ count: -1, lastSearched: -1 })
       .limit(Number(limit))
-      .select('keyword count');
+      .select('keyword');
     
     logger.info('Popular search keywords fetched successfully', {
       count: popularKeywords.length

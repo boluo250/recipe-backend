@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const SearchKeyword = require('./models/searchKeyword');
+const Recipe = require('./models/recipe');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -16,7 +17,7 @@ async function testSearchKeywords() {
     // 测试记录搜索关键词
     console.log('\n=== 测试记录搜索关键词 ===');
     
-    const testKeywords = ['红烧肉', '糖醋里脊', '宫保鸡丁', '麻婆豆腐', '红烧肉'];
+    const testKeywords = ['红烧肉', '糖醋里脊', '宫保鸡丁', '麻婆豆腐', '红烧肉', '不存在的菜谱'];
     
     for (const keyword of testKeywords) {
       const result = await SearchKeyword.findOneAndUpdate(
@@ -30,17 +31,37 @@ async function testSearchKeywords() {
       console.log(`记录关键词: ${keyword} -> 计数: ${result.count}`);
     }
 
-    // 测试获取热门搜索关键词
-    console.log('\n=== 测试获取热门搜索关键词 ===');
+    // 获取所有菜谱的关键词
+    console.log('\n=== 获取菜谱中的关键词 ===');
+    const recipes = await Recipe.find({}, 'name tags');
+    const recipeKeywords = new Set();
+    recipes.forEach(recipe => {
+      recipeKeywords.add(recipe.name.toLowerCase());
+      if (recipe.tags && Array.isArray(recipe.tags)) {
+        recipe.tags.forEach(tag => {
+          recipeKeywords.add(tag.toLowerCase());
+        });
+      }
+    });
     
-    const popularKeywords = await SearchKeyword.find()
+    console.log('菜谱中的关键词:');
+    Array.from(recipeKeywords).forEach((keyword, index) => {
+      console.log(`${index + 1}. ${keyword}`);
+    });
+
+    // 测试获取热门搜索关键词（只返回菜谱中存在的）
+    console.log('\n=== 测试获取热门搜索关键词（仅菜谱中存在的） ===');
+    
+    const popularKeywords = await SearchKeyword.find({
+      keyword: { $in: Array.from(recipeKeywords) }
+    })
       .sort({ count: -1, lastSearched: -1 })
       .limit(10)
-      .select('keyword count');
+      .select('keyword');
     
-    console.log('热门搜索关键词:');
+    console.log('热门搜索关键词（仅菜谱中存在的）:');
     popularKeywords.forEach((item, index) => {
-      console.log(`${index + 1}. ${item.keyword} (${item.count}次)`);
+      console.log(`${index + 1}. ${item.keyword}`);
     });
 
     console.log('\n测试完成！');
