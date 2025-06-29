@@ -1,0 +1,16 @@
+<view class="container">
+  <image class="detail-image" src="{{recipe.image}}" mode="cover"></image>
+  <text class="detail-title">{{recipe.name}}</text>
+  <view class="detail-content">
+    <text class="section-title">食材</text>
+    <text class="ingredients">{{recipe.ingredients}}</text>
+    
+    <text class="section-title">步骤</text>
+    <text class="steps">{{recipe.steps}}</text>
+    
+    <block wx:if="{{recipe.tips}}">
+      <text class="section-title">小贴士</text>
+      <text class="tips">{{recipe.tips}}</text>
+    </block>
+  </view>
+</view>

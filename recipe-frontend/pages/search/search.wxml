@@ -1,0 +1,72 @@
+<!-- pages/search/search.wxml -->
+<view class="container">
+  <!-- 搜索框 -->
+  <view class="search-header">
+    <view class="search-box">
+      <input 
+        class="search-input"
+        placeholder="搜索菜谱" 
+        value="{{searchQuery}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+    </view>
+  </view>
+
+  <!-- 搜索结果 -->
+  <view class="search-results">
+    <view wx:if="{{searchResults.length === 0 && !isLoading}}" class="empty-state">
+      <text>请输入关键词搜索菜谱</text>
+    </view>
+    
+    <view wx:if="{{isLoading && searchResults.length === 0}}" class="loading">
+      <text>搜索中...</text>
+    </view>
+    
+    <view wx:if="{{searchResults.length > 0}}" class="results-list">
+      <view 
+        class="result-item" 
+        wx:for="{{searchResults}}" 
+        wx:key="id"
+        bindtap="goToDetail"
+        data-id="{{item.id}}"
+      >
+        <!-- 左侧图片 -->
+        <view class="item-image-container">
+          <image 
+            class="item-image" 
+            src="{{item.image}}" 
+            mode="aspectFill"
+          />
+        </view>
+        
+        <!-- 右侧内容 -->
+        <view class="item-content">
+          <text class="item-title">{{item.name}}</text>
+          <view class="item-tags">
+            <text 
+              wx:for="{{item.tags}}" 
+              wx:key="*this" 
+              wx:for-item="tag"
+              class="tag"
+            >
+              {{tag}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore && searchResults.length > 0}}" class="load-more" bindtap="loadMoreResults">
+      <text wx:if="{{isLoading}}">加载中...</text>
+      <text wx:else>加载更多</text>
+    </view>
+    
+    <!-- 没有更多数据 -->
+    <view wx:if="{{!hasMore && searchResults.length > 0}}" class="no-more">
+      <text>没有更多数据了</text>
+    </view>
+  </view>
+</view> 

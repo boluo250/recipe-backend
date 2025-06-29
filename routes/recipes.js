@@ -28,7 +28,13 @@ router.get('/', authenticate, async (req, res) => {
     const skip = (page - 1) * size;
     let filter = {};
     if (query) {
-      filter.name = { $regex: query, $options: 'i' };
+      // 搜索菜谱名称和标签中的关键词
+      filter = {
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { tags: { $regex: query, $options: 'i' } }
+        ]
+      };
     }
     
     logger.info('Fetching recipes', {

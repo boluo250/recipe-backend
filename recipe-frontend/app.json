@@ -1,0 +1,15 @@
+{
+    "pages": [
+      "pages/index/index",
+      "pages/recipes/recipes",
+      "pages/detail/detail",
+      "pages/search/search"
+    ],
+    "window": {
+      "backgroundTextStyle": "light",
+      "navigationBarBackgroundColor": "#fff",
+      "navigationBarTitleText": "菜谱应用",
+      "navigationBarTextStyle": "black"
+    },
+    "sitemapLocation": "sitemap.json"
+  }

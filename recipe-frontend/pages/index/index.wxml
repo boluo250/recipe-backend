@@ -1,0 +1,39 @@
+<!-- pages/recipes/recipes.wxml -->
+<view class="container">
+  <!-- 搜索框 -->
+  <view class="search-box" bindtap="goToSearch">
+    <text class="search-placeholder">搜索菜谱</text>
+    <view class="search-icon">🔍</view>
+  </view>
+
+  <!-- 菜谱列表 -->
+  <view class="recipe-list">
+    <view 
+      class="recipe-item" 
+      wx:for="{{recipes}}" 
+      wx:key="id"
+      bindtap="goToDetail"
+      data-id="{{item.id}}"
+    >
+      <image 
+        class="recipe-image" 
+        src="{{item.image}}" 
+        mode="aspectFill" 
+        bindtap="goToDetail"
+        data-id="{{item.id}}"
+      />
+      
+      <view class="recipe-info">
+        <text class="recipe-name">{{item.name}}</text>
+        <view class="recipe-tags">
+          <text wx:for="{{item.tags}}" wx:key="*this" class="tag">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore}}" class="load-more" bindtap="loadMore">
+    加载更多
+  </view>
+</view>
