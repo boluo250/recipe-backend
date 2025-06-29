@@ -39,6 +39,57 @@
   margin-left: 20rpx;
 }
 
+/* 热门搜索关键词 */
+.popular-keywords {
+  background-color: #fff;
+  padding: 30rpx 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.popular-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.keyword-item {
+  background-color: #f8f8f8;
+  border-radius: 30rpx;
+  padding: 16rpx 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  transition: all 0.2s ease;
+}
+
+.keyword-item:active {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.keyword-item:active .keyword-text,
+.keyword-item:active .keyword-count {
+  color: white;
+}
+
+.keyword-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.keyword-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
 /* 搜索结果 */
 .search-results {
   padding: 20rpx;

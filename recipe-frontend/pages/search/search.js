@@ -8,15 +8,40 @@ Page({
     page: 1,
     size: 10,
     hasMore: true,
-    isLoading: false
+    isLoading: false,
+    popularKeywords: [], // 热门搜索关键词
+    showPopularKeywords: true // 是否显示热门搜索关键词
   },
 
   onLoad(options) {
+    // 加载热门搜索关键词
+    this.loadPopularKeywords();
+    
     // 如果从其他页面传入了搜索关键词
     if (options.query) {
       this.setData({ searchQuery: options.query });
       this.searchRecipes(options.query);
     }
+  },
+
+  // 加载热门搜索关键词
+  async loadPopularKeywords() {
+    try {
+      const popularKeywords = await request('/api/recipes/search/popular?limit=10');
+      this.setData({ popularKeywords });
+    } catch (error) {
+      console.error('加载热门搜索关键词失败:', error);
+    }
+  },
+
+  // 点击热门搜索关键词
+  onPopularKeywordTap(e) {
+    const keyword = e.currentTarget.dataset.keyword;
+    this.setData({ 
+      searchQuery: keyword,
+      showPopularKeywords: false
+    });
+    this.searchRecipes(keyword);
   },
 
   // 搜索输入
@@ -28,6 +53,7 @@ Page({
   onSearchConfirm(e) {
     const query = e.detail.value || this.data.searchQuery;
     if (query && query.trim()) {
+      this.setData({ showPopularKeywords: false });
       this.searchRecipes(query.trim());
     }
   },
@@ -112,7 +138,9 @@ Page({
         wx.stopPullDownRefresh();
       });
     } else {
-      wx.stopPullDownRefresh();
+      this.loadPopularKeywords().then(() => {
+        wx.stopPullDownRefresh();
+      });
     }
   }
 }); 

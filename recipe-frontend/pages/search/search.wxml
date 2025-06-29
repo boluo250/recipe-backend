@@ -14,9 +14,26 @@
     </view>
   </view>
 
+  <!-- 热门搜索关键词 -->
+  <view wx:if="{{showPopularKeywords && popularKeywords.length > 0}}" class="popular-keywords">
+    <view class="popular-title">热门搜索</view>
+    <view class="keywords-list">
+      <view 
+        class="keyword-item" 
+        wx:for="{{popularKeywords}}" 
+        wx:key="keyword"
+        bindtap="onPopularKeywordTap"
+        data-keyword="{{item.keyword}}"
+      >
+        <text class="keyword-text">{{item.keyword}}</text>
+        <text class="keyword-count">({{item.count}})</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 搜索结果 -->
   <view class="search-results">
-    <view wx:if="{{searchResults.length === 0 && !isLoading}}" class="empty-state">
+    <view wx:if="{{searchResults.length === 0 && !isLoading && !showPopularKeywords}}" class="empty-state">
       <text>请输入关键词搜索菜谱</text>
     </view>
     

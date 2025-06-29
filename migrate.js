@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Recipe = require('./models/recipe');
 const { logger } = require('./config/logger');
+const SearchKeyword = require('./models/searchKeyword');
 
 dotenv.config();
 
@@ -38,6 +39,10 @@ async function migrateRecipes() {
       );
       logger.info(`Updated recipe: ${recipe.name}`, { recipeId: recipe.id });
     }
+
+    // 创建搜索关键词集合的索引
+    await SearchKeyword.createIndexes();
+    logger.info('搜索关键词索引创建完成');
 
     logger.info('Migration completed successfully');
   } catch (error) {

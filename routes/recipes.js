@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/recipe');
+const SearchKeyword = require('../models/searchKeyword');
 const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../config/logger');
@@ -35,6 +36,24 @@ router.get('/', authenticate, async (req, res) => {
           { tags: { $regex: query, $options: 'i' } }
         ]
       };
+      
+      // 记录搜索关键词
+      try {
+        await SearchKeyword.findOneAndUpdate(
+          { keyword: query.toLowerCase() },
+          { 
+            $inc: { count: 1 },
+            lastSearched: new Date()
+          },
+          { upsert: true }
+        );
+        logger.info('Search keyword recorded', { keyword: query });
+      } catch (keywordError) {
+        logger.error('Error recording search keyword', { 
+          keyword: query, 
+          error: keywordError.message 
+        });
+      }
     }
     
     logger.info('Fetching recipes', {
@@ -184,6 +203,36 @@ router.post('/', authenticate, async (req, res) => {
       ip: req.ip || req.connection.remoteAddress
     });
     res.status(400).json({ error: 'Invalid data' });
+  }
+});
+
+// 获取热门搜索关键词
+router.get('/search/popular', authenticate, async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    logger.info('Fetching popular search keywords', {
+      limit: parseInt(limit),
+      ip: req.ip || req.connection.remoteAddress
+    });
+    
+    const popularKeywords = await SearchKeyword.find()
+      .sort({ count: -1, lastSearched: -1 })
+      .limit(Number(limit))
+      .select('keyword count');
+    
+    logger.info('Popular search keywords fetched successfully', {
+      count: popularKeywords.length
+    });
+    
+    res.json(popularKeywords);
+  } catch (err) {
+    logger.error('Error fetching popular search keywords', {
+      error: err.message,
+      stack: err.stack,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
