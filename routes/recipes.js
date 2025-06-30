@@ -98,13 +98,18 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const { query, page = 1, size = 10 } = req.query;
     const skip = (page - 1) * size;
-    let filter = {};
+    let filter = { status: 'approved' };
     if (query) {
       // 搜索菜谱名称和标签中的关键词
       filter = {
-        $or: [
-          { name: { $regex: query, $options: 'i' } },
-          { tags: { $regex: query, $options: 'i' } }
+        $and: [
+          { status: 'approved' },
+          {
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { tags: { $regex: query, $options: 'i' } }
+            ]
+          }
         ]
       };
       
@@ -274,6 +279,85 @@ router.post('/', authenticate, async (req, res) => {
       ip: req.ip || req.connection.remoteAddress
     });
     res.status(400).json({ error: 'Invalid data' });
+  }
+});
+
+// 用户上传菜谱（待审核）
+router.post('/upload', async (req, res) => {
+  try {
+    const { name, image, ingredients, steps, tips, tags } = req.body;
+    if (!name || !image || !ingredients || !steps) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    // 验证图片文件是否存在
+    const imagePath = path.join(__dirname, '../public', image);
+    try {
+      await fs.access(imagePath);
+    } catch {
+      return res.status(400).json({ error: 'Image file does not exist' });
+    }
+    const lastRecipe = await Recipe.findOne().sort({ id: -1 });
+    const newId = lastRecipe ? lastRecipe.id + 1 : 1;
+    const recipe = new Recipe({
+      id: newId,
+      name,
+      image,
+      ingredients,
+      steps,
+      tips,
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      status: 'pending'
+    });
+    await recipe.save();
+    res.status(201).json({ message: 'Recipe uploaded, pending review.' });
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid data' });
+  }
+});
+
+// 管理员审核通过菜谱
+router.post('/:id/approve', authenticate, async (req, res) => {
+  try {
+    const recipeId = Number(req.params.id);
+    const recipe = await Recipe.findOneAndUpdate(
+      { id: recipeId },
+      { status: 'approved' },
+      { new: true }
+    );
+    if (!recipe) {
+      return res.status(404).json({ error: 'Recipe not found' });
+    }
+    res.json({ message: 'Recipe approved.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 管理员拒绝菜谱
+router.post('/:id/reject', authenticate, async (req, res) => {
+  try {
+    const recipeId = Number(req.params.id);
+    const recipe = await Recipe.findOneAndUpdate(
+      { id: recipeId },
+      { status: 'rejected' },
+      { new: true }
+    );
+    if (!recipe) {
+      return res.status(404).json({ error: 'Recipe not found' });
+    }
+    res.json({ message: 'Recipe rejected.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 获取所有待审核菜谱
+router.get('/pending-list', authenticate, async (req, res) => {
+  try {
+    const pendingRecipes = await Recipe.find({ status: 'pending' });
+    res.json(pendingRecipes);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
