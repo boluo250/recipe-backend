@@ -185,10 +185,11 @@ router.get('/:id', authenticate, async (req, res) => {
     }
     
     const baseUrl = process.env.SERVER_URL;
+    const recipeObj = recipe.toObject();
     const updatedRecipe = {
-      ...recipe.toObject(),
-      image: recipe.image.startsWith('http') ? recipe.image : `${baseUrl}${recipe.image}`,
-      steps: recipe.steps.map(step => ({
+      ...recipeObj,
+      image: recipeObj.image.startsWith('http') ? recipeObj.image : `${baseUrl}${recipeObj.image}`,
+      steps: (recipeObj.steps || []).map(step => ({
         ...step,
         image: step.image && !step.image.startsWith('http') ? `${baseUrl}${step.image}` : step.image
       }))
