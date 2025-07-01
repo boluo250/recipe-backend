@@ -187,7 +187,11 @@ router.get('/:id', authenticate, async (req, res) => {
     const baseUrl = process.env.SERVER_URL;
     const updatedRecipe = {
       ...recipe.toObject(),
-      image: recipe.image.startsWith('http') ? recipe.image : `${baseUrl}${recipe.image}`
+      image: recipe.image.startsWith('http') ? recipe.image : `${baseUrl}${recipe.image}`,
+      steps: recipe.steps.map(step => ({
+        ...step,
+        image: step.image && !step.image.startsWith('http') ? `${baseUrl}${step.image}` : step.image
+      }))
     };
     
     logger.info('Recipe details fetched successfully', {

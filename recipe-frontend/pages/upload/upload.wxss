@@ -1,0 +1,24 @@
+.upload-container {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 40rpx 24rpx;
+  padding: 32rpx 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+}
+.form-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 24rpx;
+  color: #4a7c59;
+}
+.form-group {
+  margin-bottom: 24rpx;
+}
+.upload-preview {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
+  margin-top: 12rpx;
+  border: 1rpx solid #eee;
+  object-fit: cover;
+} 

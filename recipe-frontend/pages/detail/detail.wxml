@@ -6,7 +6,16 @@
     <text class="ingredients">{{recipe.ingredients}}</text>
     
     <text class="section-title">步骤</text>
-    <text class="steps">{{recipe.steps}}</text>
+    <view class="steps">
+      <block wx:for="{{recipe.steps}}" wx:key="_id">
+        <view class="step-item">
+          <text>{{index + 1}}. {{item.description}}</text>
+          <block wx:if="{{item.image}}">
+            <image class="step-image" src="{{item.image}}" mode="aspectFit"></image>
+          </block>
+        </view>
+      </block>
+    </view>
     
     <block wx:if="{{recipe.tips}}">
       <text class="section-title">小贴士</text>

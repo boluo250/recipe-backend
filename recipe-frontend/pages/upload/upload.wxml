@@ -1,0 +1,27 @@
+<view class="upload-container">
+  <view class="form-title">上传你的菜谱（审核后展示）</view>
+  <form bindsubmit="onUploadRecipe" report-submit="true">
+    <view class="form-group">
+      <text>菜谱图片</text>
+      <button type="default" bindtap="chooseImage">选择图片</button>
+      <image wx:if="{{uploadImage}}" src="{{uploadImage}}" class="upload-preview" mode="aspectFill" />
+    </view>
+    <view class="form-group">
+      <text>菜谱名称</text>
+      <input name="name" placeholder="请输入菜谱名称" value="{{uploadName}}" bindinput="onInputChange" data-field="uploadName" />
+    </view>
+    <view class="form-group">
+      <text>食材</text>
+      <input name="ingredients" placeholder="请输入食材" value="{{uploadIngredients}}" bindinput="onInputChange" data-field="uploadIngredients" />
+    </view>
+    <view class="form-group">
+      <text>步骤</text>
+      <textarea name="steps" placeholder="请输入步骤（可用换行分隔）" value="{{uploadSteps}}" bindinput="onInputChange" data-field="uploadSteps" />
+    </view>
+    <view class="form-group">
+      <text>标签</text>
+      <input name="tags" placeholder="请输入标签（逗号分隔）" value="{{uploadTags}}" bindinput="onInputChange" data-field="uploadTags" />
+    </view>
+    <button formType="submit" type="primary">提交菜谱</button>
+  </form>
+</view> 

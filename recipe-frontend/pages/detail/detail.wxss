@@ -43,3 +43,11 @@
   color: #666;
   font-style: italic;
 }
+.step-image {
+  width: 100%;
+  max-width: 500rpx;
+  height: auto;
+  margin: 10rpx 0;
+  border-radius: 8rpx;
+  display: block;
+}
