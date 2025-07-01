@@ -11,7 +11,7 @@
         <view class="step-item">
           <text>{{index + 1}}. {{item.description}}</text>
           <block wx:if="{{item.image}}">
-            <image class="step-image" src="{{item.image}}" mode="aspectFit"></image>
+             <image src="{{item.image}}"></image>
           </block>
         </view>
       </block>
