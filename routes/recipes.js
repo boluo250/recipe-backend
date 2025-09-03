@@ -5,6 +5,7 @@ const SearchKeyword = require('../models/searchKeyword');
 const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../config/logger');
+const multer = require('multer');
 
 // 中间件：验证 API 密钥
 const authenticate = (req, res, next) => {
@@ -21,6 +22,53 @@ const authenticate = (req, res, next) => {
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
+
+// 配置 multer 用于文件上传
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const category = req.body.category || 'default'; // 从请求中获取分类
+    const uploadPath = path.join(__dirname, '../public/images', category);
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// 图片上传接口
+router.post('/upload-image', authenticate, upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const category = req.body.category || 'default';
+    const imagePath = `/images/${category}/${req.file.filename}`;
+    
+    logger.info('Image uploaded successfully', {
+      filename: req.file.filename,
+      category: category,
+      originalName: req.file.originalname,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    
+    res.json({ 
+      success: true, 
+      path: imagePath,
+      url: `${process.env.SERVER_URL}${imagePath}`
+    });
+  } catch (err) {
+    logger.error('Error uploading image', {
+      error: err.message,
+      stack: err.stack,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
 
 // 获取热门搜索关键词
 router.get('/popular-keywords', authenticate, async (req, res) => {
@@ -236,16 +284,37 @@ router.post('/', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // 验证图片文件是否存在
+    // 验证图片文件是否存在 - 支持子目录
     const imagePath = path.join(__dirname, '../public', image);
     try {
       await fs.access(imagePath);
     } catch {
-      logger.warn('Image file does not exist', {
-        imagePath: image,
-        ip: req.ip || req.connection.remoteAddress
-      });
-      return res.status(400).json({ error: 'Image file does not exist' });
+      // 如果直接路径不存在，尝试在子目录中查找
+      const possiblePaths = [
+        path.join(__dirname, '../public/images/chao', path.basename(image)),
+        path.join(__dirname, '../public/images/zhu', path.basename(image)),
+        path.join(__dirname, '../public/images/ban', path.basename(image)),
+        path.join(__dirname, '../public/images', path.basename(image))
+      ];
+      
+      let found = false;
+      for (const possiblePath of possiblePaths) {
+        try {
+          await fs.access(possiblePath);
+          found = true;
+          break;
+        } catch {
+          continue;
+        }
+      }
+      
+      if (!found) {
+        logger.warn('Image file does not exist in any directory', {
+          imagePath: image,
+          ip: req.ip || req.connection.remoteAddress
+        });
+        return res.status(400).json({ error: 'Image file does not exist' });
+      }
     }
     
     const lastRecipe = await Recipe.findOne().sort({ id: -1 });

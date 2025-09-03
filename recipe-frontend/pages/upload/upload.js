@@ -32,14 +32,21 @@ Page({
       wx.showToast({ title: '请填写完整信息', icon: 'none' });
       return;
     }
-    // 先上传图片到服务器（假设有 /api/upload-image 接口，返回图片路径）
+    
+    // 根据菜谱名称或标签判断分类
+    const category = this.determineCategory(uploadName, uploadTags);
+    
+    // 先上传图片到服务器
     let imagePath = '';
     try {
       const uploadRes = await new Promise((resolve, reject) => {
         wx.uploadFile({
-          url: 'http://43.130.10.169:3000/api/upload-image',
+          url: 'https://veganbubu.site/api/upload-image',
           filePath: uploadImage,
           name: 'file',
+          formData: {
+            category: category
+          },
           header: { 'Authorization': 'Bearer fa7a7ec5a23247014108e0dd4e7db0ac985a870860d82a7a2a8e105021c0a627' },
           success: resolve,
           fail: reject
@@ -51,6 +58,7 @@ Page({
       wx.showToast({ title: '图片上传失败', icon: 'none' });
       return;
     }
+    
     // 处理步骤（换行分割）
     const stepsArr = uploadSteps.split(/\n|\r/).filter(Boolean).map(s => ({ description: s }));
     // 提交菜谱
@@ -79,5 +87,33 @@ Page({
     } catch (err) {
       wx.showToast({ title: '上传失败', icon: 'none' });
     }
+  },
+
+  // 根据菜谱名称和标签判断分类
+  determineCategory(name, tags) {
+    const nameLower = name.toLowerCase();
+    const tagsLower = (tags || '').toLowerCase();
+    
+    // 炒菜相关关键词
+    if (nameLower.includes('炒') || tagsLower.includes('炒') || 
+        nameLower.includes('清炒') || tagsLower.includes('清炒')) {
+      return 'chao';
+    }
+    
+    // 煮菜相关关键词
+    if (nameLower.includes('煮') || tagsLower.includes('煮') ||
+        nameLower.includes('汤') || tagsLower.includes('汤') ||
+        nameLower.includes('炖') || tagsLower.includes('炖')) {
+      return 'zhu';
+    }
+    
+    // 拌菜相关关键词
+    if (nameLower.includes('拌') || tagsLower.includes('拌') ||
+        nameLower.includes('凉拌') || tagsLower.includes('凉拌')) {
+      return 'ban';
+    }
+    
+    // 默认分类
+    return 'default';
   }
 }); 
