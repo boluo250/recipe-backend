@@ -6,12 +6,16 @@ const recipeRoutes = require('./routes/recipes');
 const path = require('path');
 const { logger } = require('./config/logger');
 const accessLogMiddleware = require('./middleware/accessLogger');
+const { apiLimiter } = require('./middleware/rateLimiter');
 
 dotenv.config();
 const app = express();
 
 // 使用访问日志中间件
 app.use(accessLogMiddleware);
+
+// 应用速率限制
+app.use(apiLimiter);
 
 app.use(cors());
 app.use(express.json());

@@ -6,6 +6,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../config/logger');
 const multer = require('multer');
+const { uploadLimiter, userSubmissionLimiter } = require('../middleware/rateLimiter');
 
 // 中间件：验证 API 密钥
 const authenticate = (req, res, next) => {
@@ -39,7 +40,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // 图片上传接口
-router.post('/upload-image', authenticate, upload.single('file'), (req, res) => {
+router.post('/upload-image', uploadLimiter, authenticate, upload.single('file'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -370,7 +371,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // 用户上传菜谱（待审核）
-router.post('/upload', async (req, res) => {
+router.post('/upload', userSubmissionLimiter, async (req, res) => {
   try {
     const { name, image, ingredients, steps, tips, tags } = req.body;
     if (!name || !image || !ingredients || !steps) {
