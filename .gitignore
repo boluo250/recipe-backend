@@ -1,4 +1,5 @@
 .env
 logs/
-scripts\input_images
-scripts\output_images
+scripts/input_images
+scripts/output_images
+node_modules/
