@@ -187,10 +187,23 @@ router.get('/', authenticate, async (req, res) => {
       ip: req.ip || req.connection.remoteAddress
     });
     
-    const recipes = await Recipe.find(filter).skip(skip).limit(Number(size));
+    let recipes;
+    if (!query) {
+      // 无搜索条件时，直接随机采样
+      recipes = await Recipe.aggregate([
+        { $match: { status: 'approved' } },
+        { $sample: { size: Number(size) } }
+      ]);
+    } else {
+      // 有搜索条件时，先过滤再随机
+      recipes = await Recipe.aggregate([
+        { $match: filter },
+        { $sample: { size: Number(size) } }
+      ]);
+    }
     const baseUrl = process.env.SERVER_URL;
     const updatedRecipes = recipes.map(recipe => ({
-      ...recipe.toObject(),
+      ...recipe,
       image: recipe.image.startsWith('http') ? recipe.image : `${baseUrl}${recipe.image}`
     }));
     
